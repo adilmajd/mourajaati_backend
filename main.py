@@ -5,9 +5,8 @@ from typing import Annotated,Optional
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
-class Ville(SQLModel, table=True):
-    ville_id: Optional[int] = Field(default=None, primary_key=True)
-    ville_nom: str
+from model.Base import Ville
+
 
 DATABASE_URL = "mysql+pymysql://root:1234@localhost:3306/mourajaati"
 engine = create_engine(DATABASE_URL, echo=True)

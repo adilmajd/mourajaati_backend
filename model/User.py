@@ -20,6 +20,11 @@ class User(SQLModel, table=True):
     ecole_id: int = Field(foreign_key="ecole.ecole_id")
     ville_id: int = Field(foreign_key="ville.ville_id")
     grade_id: int = Field(foreign_key="grade.grade_id")
+    
+class Etat(SQLModel, table=True):
+    etat_id: int = Field(primary_key=True)
+    label: str = Field(max_length=20, unique=True)
+
 
 
 class Role(SQLModel, table=True):

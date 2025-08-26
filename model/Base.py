@@ -5,15 +5,10 @@ from typing import Optional, List
 # TABLES DE BASE
 # ======================
 
-class Etat(SQLModel, table=True):
-    etat_id: int = Field(primary_key=True)
-    label: str = Field(max_length=20, unique=True)
-
 
 class Ville(SQLModel, table=True):
     ville_id: int = Field(primary_key=True)
     ville_nom: str = Field(max_length=20, unique=True)
-    etat_id: int = Field(foreign_key="etat.etat_id")
 
 
 class CodePostale(SQLModel, table=True):
