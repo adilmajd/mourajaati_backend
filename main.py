@@ -3,17 +3,12 @@
 from typing import Annotated,Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Session, select
 
+from database.base import get_session
 from model.Base import Ville
 
 
-DATABASE_URL = "mysql+pymysql://root:1234@localhost:3306/mourajaati"
-engine = create_engine(DATABASE_URL, echo=True)
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 
 

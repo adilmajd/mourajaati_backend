@@ -56,3 +56,4 @@ class Permission(SQLModel, table=True):
 class RoleHasPermission(SQLModel, table=True):
     role_id: int = Field(foreign_key="role.role_id", primary_key=True)
     permission_id: int = Field(foreign_key="permission.permission_id", primary_key=True)
+
