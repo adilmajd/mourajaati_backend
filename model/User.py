@@ -7,7 +7,7 @@ from typing import Optional, List
 # ======================
 
 class User(SQLModel, table=True):
-    user_id: int = Field(primary_key=True)
+    user_id: Optional[int] = Field(default=None, primary_key=True)
     nom: str = Field(max_length=20)
     prenom: str = Field(max_length=20)
     mail: str = Field(max_length=20, unique=True)
@@ -22,18 +22,18 @@ class User(SQLModel, table=True):
     grade_id: int = Field(foreign_key="grade.grade_id")
     
 class Etat(SQLModel, table=True):
-    etat_id: int = Field(primary_key=True)
+    etat_id: Optional[int] = Field(default=None, primary_key=True)
     label: str = Field(max_length=20, unique=True)
 
 
 
 class Role(SQLModel, table=True):
-    role_id: int = Field(primary_key=True)
+    role_id: Optional[int] = Field(default=None, primary_key=True)
     role_name: str = Field(max_length=20)
 
 
 class GroupTable(SQLModel, table=True):
-    group_id: int = Field(primary_key=True)
+    group_id: Optional[int] = Field(default=None, primary_key=True)
     group_name: str = Field(max_length=20)
     role_id: int = Field(foreign_key="role.role_id")
 
@@ -49,7 +49,7 @@ class GroupHasUser(SQLModel, table=True):
 
 
 class Permission(SQLModel, table=True):
-    permission_id: int = Field(primary_key=True)
+    permission_id: Optional[int] = Field(default=None, primary_key=True)
     permission_name: str = Field(max_length=20)
 
 
