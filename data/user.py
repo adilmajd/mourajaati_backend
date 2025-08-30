@@ -40,3 +40,6 @@ def get_user_by_mail(session: Session, mail: str):
 
 def get_user_by_etat(session: Session, etat_id: int):
     return session.exec(select(User).where(User.etat_id == etat_id)).all()
+
+
+
