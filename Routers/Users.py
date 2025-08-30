@@ -12,7 +12,7 @@ async def read_root():
     return {"message": "Users"}
 
 @router.get("/all/")
-async def read_root(session: Session = Depends(get_session)):
+async def get_all_user_read(session: Session = Depends(get_session)):
      return get_all_user(session)
 
 @router.get("/add/")
