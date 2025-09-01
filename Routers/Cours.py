@@ -1,0 +1,95 @@
+from fastapi import APIRouter,Depends
+from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
+from database.base import get_session
+from sqlmodel import Session, select
+from typing import List, Optional
+
+from model.Cours import Cours, Examen, Exercice, Post, Comment, UserExamen, UserExercice
+
+"""
+
+"""
+
+
+router = APIRouter()
+
+# ---- COURS ----
+@router.post("/cours/", response_model=Cours)
+def add_cours(cours: Cours, session: Session = Depends(get_session)):
+    return create_entity(session, cours)
+
+@router.get("/cours/", response_model=List[Cours])
+def list_cours(session: Session = Depends(get_session)):
+    return get_all_entities(session, Cours)
+
+@router.get("/cours/{cours_id}", response_model=Cours)
+def get_cours(cours_id: int, session: Session = Depends(get_session)):
+    return get_entity_by_id(session, Cours, cours_id)
+
+@router.put("/cours/{cours_id}", response_model=Cours)
+def update_cours(cours_id: int, updates: dict, session: Session = Depends(get_session)):
+    return update_entity(session, Cours, cours_id, updates)
+
+@router.delete("/cours/{cours_id}")
+def delete_cours(cours_id: int, session: Session = Depends(get_session)):
+    return delete_entity(session, Cours, cours_id)
+
+
+# ---- EXERCICE ----
+@router.post("/exercices/", response_model=Exercice)
+def add_exercice(exercice: Exercice, session: Session = Depends(get_session)):
+    return create_entity(session, exercice)
+
+@router.get("/exercices/", response_model=List[Exercice])
+def list_exercices(session: Session = Depends(get_session)):
+    return get_all_entities(session, Exercice)
+
+
+# ---- POST ----
+@router.post("/posts/", response_model=Post)
+def add_post(post: Post, session: Session = Depends(get_session)):
+    return create_entity(session, post)
+
+@router.get("/posts/", response_model=List[Post])
+def list_posts(session: Session = Depends(get_session)):
+    return get_all_entities(session, Post)
+
+
+# ---- COMMENT ----
+@router.post("/comments/", response_model=Comment)
+def add_comment(comment: Comment, session: Session = Depends(get_session)):
+    return create_entity(session, comment)
+
+@router.get("/comments/", response_model=List[Comment])
+def list_comments(session: Session = Depends(get_session)):
+    return get_all_entities(session, Comment)
+
+
+# ---- EXAMEN ----
+@router.post("/examens/", response_model=Examen)
+def add_examen(examen: Examen, session: Session = Depends(get_session)):
+    return create_entity(session, examen)
+
+@router.get("/examens/", response_model=List[Examen])
+def list_examens(session: Session = Depends(get_session)):
+    return get_all_entities(session, Examen)
+
+
+# ---- USER EXAMEN ----
+@router.post("/user_examens/", response_model=UserExamen)
+def add_user_examen(user_examen: UserExamen, session: Session = Depends(get_session)):
+    return create_entity(session, user_examen)
+
+@router.get("/user_examens/", response_model=List[UserExamen])
+def list_user_examens(session: Session = Depends(get_session)):
+    return get_all_entities(session, UserExamen)
+
+
+# ---- USER EXERCICE ----
+@router.post("/user_exercices/", response_model=UserExercice)
+def add_user_exercice(user_exercice: UserExercice, session: Session = Depends(get_session)):
+    return create_entity(session, user_exercice)
+
+@router.get("/user_exercices/", response_model=List[UserExercice])
+def list_user_exercices(session: Session = Depends(get_session)):
+    return get_all_entities(session, UserExercice)
