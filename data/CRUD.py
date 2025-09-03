@@ -1,5 +1,8 @@
 from fastapi import HTTPException
 from sqlmodel import Session, select
+from fastapi import Depends
+from database.base import get_session
+
 
 
 def create_entity(session: Session, entity):

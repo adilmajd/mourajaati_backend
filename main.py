@@ -1,11 +1,8 @@
 # main.py
 
 from typing import Annotated,Optional
-
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Session, select
-
-from data.user import get_all_user
 from database.base import get_session
 from Routers import Users,Root, Base,Cours
 
