@@ -10,6 +10,19 @@ from sqlmodel import Session, select
 # Gestion Utilisateurs
 # ======================
 
+#fonction d'authentification
+def login_user(session: Session,login: str,compte_password: str):
+    statement=(
+            select(User)
+               .where(User.login==login)
+               .where(User.compte_password == compte_password)
+               .where(User.etat_id == 1)
+               )
+    result = session.exec(statement).first()
+    if not result:
+        return None
+    return result
+
 def get_user_by_mail(session: Session, mail: str):
     return session.exec(select(User).where(User.mail == mail)).first()
 

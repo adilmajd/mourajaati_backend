@@ -1,5 +1,7 @@
 from fastapi import APIRouter,Depends
+from pydantic import BaseModel
 from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
+from data.user import login_user
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
@@ -13,6 +15,10 @@ end point (les APIs) des Users
 
 /permissions/ -> gestion des permissions & affectation aux rôles.
 """
+
+class LoginRequest(BaseModel):
+    login: str
+    password: str
 
 router = APIRouter()
 
@@ -39,6 +45,14 @@ def update_user(user_id: int, updates: dict, session: Session = Depends(get_sess
 @router.delete("/users/{user_id}")
 def remove_user(user_id: int, session: Session = Depends(get_session)):
     return delete_entity(session, User, user_id)
+
+@router.post("/login/")
+def login_user_r(request: LoginRequest, session: Session = Depends(get_session)):
+    user = login_user(session,request.login,request.password)
+    if not user:
+        return {"message" : "erreur"}
+    return {"message" : "connection ok","user":user}
+
 """
 @router.put("/{user_id}/etat/{etat_id}")
 def change_user_etat_read(user_id: int, etat_id: int, session: Session = Depends(get_session)):
