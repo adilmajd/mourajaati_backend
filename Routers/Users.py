@@ -6,6 +6,7 @@ from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
 from model.User import Permission, Role, User
+from data.user import get_password_hash
 
 """
 end point (les APIs) des Users
@@ -57,6 +58,16 @@ def login_user_r(request: LoginRequest, session: Session = Depends(get_session))
 @router.put("/{user_id}/etat/{etat_id}")
 def change_user_etat_read(user_id: int, etat_id: int, session: Session = Depends(get_session)):
     return change_user_etat(session, user_id, etat_id)
+
+@router.get("/hash/")
+async def hash_users(session: Session = Depends(get_session)):
+    users = session.exec(select(User)).all()
+    for user in users:
+        if not user.compte_password.startswith("$2b$"):
+            hashed = get_password_hash(user.compte_password)
+            user.compte_password = hashed
+            session.add(user)
+    session.commit()
 """
 
 # ======================

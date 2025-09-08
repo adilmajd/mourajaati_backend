@@ -2,9 +2,27 @@ from fastapi import HTTPException
 from model.User import Permission, Role, RoleHasPermission, User, UserHasRole
 from sqlmodel import Session, select
 
+from datetime import datetime, timedelta
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+
 """
 
 """
+
+# .env 
+SECRET_KEY=""
+ALGORITHM=""
+TOKEN_EXPIRE=""
+
+# Pour le hash des mots de passe
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def get_password_hash(password:str):
+    return pwd_context.hash(password)
+
+def verify_password(plain_password,hash_password)-> bool :
+    return pwd_context.verify(plain_password,hash_password)
 
 # ======================
 # Gestion Utilisateurs
@@ -15,13 +33,14 @@ def login_user(session: Session,login: str,compte_password: str):
     statement=(
             select(User)
                .where(User.login==login)
-               .where(User.compte_password == compte_password)
                .where(User.etat_id == 1)
                )
-    result = session.exec(statement).first()
-    if not result:
-        return None
-    return result
+    user = session.exec(statement).first()
+    if not user:
+        return {"message":"Utilisateur introuvable"}
+    if not verify_password(compte_password,user.compte_password):
+        return {"message":"Mot de passe erroné"}
+    return user
 
 def get_user_by_mail(session: Session, mail: str):
     return session.exec(select(User).where(User.mail == mail)).first()
