@@ -6,7 +6,7 @@ from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
 from model.User import Permission, Role, User
-from data.user import get_password_hash
+from data.user import get_password_hash,get_me
 
 """
 end point (les APIs) des Users
@@ -40,7 +40,7 @@ async def get_user(user_id: int,session: Session = Depends(get_session)):
      return get_entity_by_id(session, User, user_id)
 
 @router.put("/users/{user_id}", response_model=User)
-def update_user(user_id: int, updates: dict, session: Session = Depends(get_session)):
+def update_user(user_id: int, updates: dict, session: Session = Depends(get_session),user: str = Depends(get_me)):
     return update_entity(session, User, user_id, updates)
 
 @router.delete("/users/{user_id}")
@@ -54,6 +54,10 @@ def login_user_r(request: LoginRequest, session: Session = Depends(get_session))
         return {"message" : "erreur"}
     return {"message" : "connection ok","user":user}
 
+#test_me
+@router.get("/test_me")
+async def test_me(user: str = Depends(get_me)):
+     return {"user login":user}
 """
 @router.put("/{user_id}/etat/{etat_id}")
 def change_user_etat_read(user_id: int, etat_id: int, session: Session = Depends(get_session)):

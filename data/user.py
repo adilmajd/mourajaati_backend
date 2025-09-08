@@ -1,4 +1,5 @@
-from fastapi import HTTPException
+from fastapi import HTTPException,Depends
+from fastapi.security import OAuth2PasswordBearer
 from model.User import Permission, Role, RoleHasPermission, User, UserHasRole
 from sqlmodel import Session, select
 
@@ -11,12 +12,33 @@ from passlib.context import CryptContext
 """
 
 # .env 
-SECRET_KEY=""
-ALGORITHM=""
-TOKEN_EXPIRE=""
+SECRET_KEY="123456789abcdefghijklmop_Khalid_Abdelah_Badrdine_Adil"
+ALGORITHM="HS256"
+TOKEN_EXPIRE=60 #minute
 
 # Pour le hash des mots de passe
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+#shema de sécurité basé sur OAuth2
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
+
+
+def get_me(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        login = payload.get("sub")
+        if login is None:
+            raise HTTPException(status_code=401, detail="Token invalide")
+        return login
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token invalide")
+    
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
 def get_password_hash(password:str):
     return pwd_context.hash(password)
@@ -40,7 +62,12 @@ def login_user(session: Session,login: str,compte_password: str):
         return {"message":"Utilisateur introuvable"}
     if not verify_password(compte_password,user.compte_password):
         return {"message":"Mot de passe erroné"}
-    return user
+    access_token_expires = timedelta(minutes=TOKEN_EXPIRE)
+    access_token = create_access_token(
+        data={"sub": user.login}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
 
 def get_user_by_mail(session: Session, mail: str):
     return session.exec(select(User).where(User.mail == mail)).first()
