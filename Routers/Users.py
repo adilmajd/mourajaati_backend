@@ -57,7 +57,7 @@ def update_user(user_id: int, updates: dict, session: Session = Depends(get_sess
 def remove_user(user_id: int, session: Session = Depends(get_session)):
     return delete_entity(session, User, user_id)
 
-@router.post("/login/")
+@router.post("/login")
 def login_user_r(request: LoginRequest, session: Session = Depends(get_session)):
     user = login_user(session,request.login,request.password)
     if not user:

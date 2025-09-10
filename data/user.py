@@ -79,9 +79,9 @@ def login_user(session: Session,login: str,compte_password: str):
                )
     user = session.exec(statement).first()
     if not user:
-        return {"message":"Utilisateur introuvable"}
+        return None
     if not verify_password(compte_password,user.compte_password):
-        return {"message":"Mot de passe erroné"}
+        return None
     #recupérer les roles
     roles = session.exec(select(Role.role_name)
                          .join(User_Has_Role,User_Has_Role.role_id==Role.role_id)
