@@ -1,6 +1,6 @@
 from fastapi import HTTPException,Depends
 from fastapi.security import OAuth2PasswordBearer
-from model.User import Permission, Role, RoleHasPermission, User, UserHasRole
+from model.User import Permission, Role, Role_Has_Permission, User, User_Has_Role
 from sqlmodel import Session, select
 
 from datetime import datetime, timedelta
@@ -22,17 +22,37 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 #shema de sécurité basé sur OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
 
-
+#pour tester jwt (token)
 def get_me(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         login = payload.get("sub")
+        roles = payload.get("roles",[])
+        permissions = payload.get("permissions",[])
         if login is None:
             raise HTTPException(status_code=401, detail="Token invalide")
-        return login
+        return {
+            "username":login,
+            "roles":roles,
+            "permissions":permissions
+        }
     except JWTError:
         raise HTTPException(status_code=401, detail="Token invalide")
     
+def require_role(required_role: str):
+    def wrapper(user=Depends(get_me)):
+        if required_role not in user["roles"]:
+            raise HTTPException(status_code=403, detail=f"Accès interdit : rôle {required_role} requis")
+        return user
+    return wrapper
+
+def require_permission(required_permission: str):
+    def wrapper(user=Depends(get_me)):
+        if required_permission not in user["permissions"]:
+            raise HTTPException(status_code=403, detail=f"Accès interdit : permission {required_permission} requise")
+        return user
+    return wrapper
+
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
@@ -62,9 +82,30 @@ def login_user(session: Session,login: str,compte_password: str):
         return {"message":"Utilisateur introuvable"}
     if not verify_password(compte_password,user.compte_password):
         return {"message":"Mot de passe erroné"}
+    #recupérer les roles
+    roles = session.exec(select(Role.role_name)
+                         .join(User_Has_Role,User_Has_Role.role_id==Role.role_id)
+                         .where(User_Has_Role.user_id == user.user_id)).all()
+
+    
+    #recupérer les permissions
+    permissions = session.exec(
+        select(Permission.permission_name)
+        .join(Role_Has_Permission,Role_Has_Permission.permission_id== Permission.permission_id)
+        .where(Role_Has_Permission.role_id.in_(
+            select(User_Has_Role.role_id).where(User_Has_Role.user_id == user.user_id)
+        ) )
+    ).all()
+    
+    #payload (key , value )
+    data_token = {
+        "sub": user.login,
+        "roles":roles,
+        "permissions":permissions
+    }
     access_token_expires = timedelta(minutes=TOKEN_EXPIRE)
     access_token = create_access_token(
-        data={"sub": user.login}, expires_delta=access_token_expires
+        data=data_token, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 

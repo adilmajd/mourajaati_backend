@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Depends
 from pydantic import BaseModel
 from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
-from data.user import login_user
+from data.user import login_user, require_permission
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
@@ -26,6 +26,16 @@ router = APIRouter()
 # ======================
 # Gestion Utilisateurs
 # ======================
+
+# Adil + badrdine
+@router.get("/lire/")
+async def test_lire(user = Depends(require_permission("Lire"))):
+     return {"message":"fonction de permission lire"}
+#badrdine
+@router.get("/ecrire/")
+async def test_ecrire(user = Depends(require_permission("Ecrire"))):
+      return {"message":"fonction de permission ecrire"}
+
 
 @router.post("/users/", response_model=User)
 def add_user(user: User, session: Session = Depends(get_session)):
@@ -56,8 +66,8 @@ def login_user_r(request: LoginRequest, session: Session = Depends(get_session))
 
 #test_me
 @router.get("/test_me")
-async def test_me(user: str = Depends(get_me)):
-     return {"user login":user}
+async def test_me(data: str = Depends(get_me)):
+     return {"user login":data}
 """
 @router.put("/{user_id}/etat/{etat_id}")
 def change_user_etat_read(user_id: int, etat_id: int, session: Session = Depends(get_session)):

@@ -31,21 +31,9 @@ class Role(SQLModel, table=True):
     role_id: Optional[int] = Field(default=None, primary_key=True)
     role_name: str = Field(max_length=20)
 
-
-class GroupTable(SQLModel, table=True):
-    group_id: Optional[int] = Field(default=None, primary_key=True)
-    group_name: str = Field(max_length=20)
-    role_id: int = Field(foreign_key="role.role_id")
-
-
-class UserHasRole(SQLModel, table=True):
+class User_Has_Role(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.user_id", primary_key=True)
     role_id: int = Field(foreign_key="role.role_id", primary_key=True)
-
-
-class GroupHasUser(SQLModel, table=True):
-    user_id: int = Field(foreign_key="user.user_id", primary_key=True)
-    group_id: int = Field(foreign_key="group_table.group_id", primary_key=True)
 
 
 class Permission(SQLModel, table=True):
@@ -53,7 +41,7 @@ class Permission(SQLModel, table=True):
     permission_name: str = Field(max_length=20)
 
 
-class RoleHasPermission(SQLModel, table=True):
+class Role_Has_Permission(SQLModel, table=True):
     role_id: int = Field(foreign_key="role.role_id", primary_key=True)
     permission_id: int = Field(foreign_key="permission.permission_id", primary_key=True)
 
