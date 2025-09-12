@@ -107,7 +107,15 @@ def login_user(session: Session,login: str,compte_password: str):
     access_token = create_access_token(
         data=data_token, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+            "access_token": access_token,
+             "token_type": "bearer",
+             "user_id":user.user_id,
+             "roles":roles,
+             "permissions":permissions,
+             "login":user.login
+             
+             }
 
 
 def get_user_by_mail(session: Session, mail: str):
