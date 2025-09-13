@@ -141,13 +141,13 @@ def change_user_etat(session: Session, user_id: int, etat_id: int):
 # ---- RÔLES ----
 
 def assign_role_to_user(session: Session, user_id: int, role_id: int):
-    link = UserHasRole(user_id=user_id, role_id=role_id)
+    link = User_Has_Role(user_id=user_id, role_id=role_id)
     session.add(link)
     session.commit()
     return {"message": "Rôle assigné"}
 
 def remove_role_from_user(session: Session, user_id: int, role_id: int):
-    link = session.get(UserHasRole, (user_id, role_id))
+    link = session.get(User_Has_Role, (user_id, role_id))
     if not link:
         raise HTTPException(404, "Lien non trouvé")
     session.delete(link)
@@ -159,7 +159,7 @@ def remove_role_from_user(session: Session, user_id: int, role_id: int):
 
 
 def assign_permission_to_role(session: Session, role_id: int, permission_id: int):
-    link = RoleHasPermission(role_id=role_id, permission_id=permission_id)
+    link = Role_Has_Permission(role_id=role_id, permission_id=permission_id)
     session.add(link)
     session.commit()
     return {"message": "Permission assignée"}

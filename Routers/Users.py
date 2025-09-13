@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Depends
 from pydantic import BaseModel
 from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
-from data.user import login_user, require_permission
+from data.user import login_user, require_permission,require_role
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
@@ -42,7 +42,7 @@ def add_user(user: User, session: Session = Depends(get_session)):
     return create_entity(session, User)
 
 @router.get("/users/", response_model=List[User])
-async def list_users(session: Session = Depends(get_session)):
+async def list_users(session: Session = Depends(get_session),user = Depends(require_role("admin"))):
      return get_all_entities(session, User)
 
 @router.get("/users/{user_id}", response_model=User)
