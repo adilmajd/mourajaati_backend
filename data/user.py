@@ -110,11 +110,10 @@ def login_user(session: Session,login: str,compte_password: str):
     return {
             "access_token": access_token,
              "token_type": "bearer",
-             "user_id":user.user_id,
+             "user_id":user.user_id, # interdit
              "roles":roles,
              "permissions":permissions,
              "login":user.login
-             
              }
 
 
