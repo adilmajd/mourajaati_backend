@@ -116,6 +116,25 @@ def login_user(session: Session,login: str,compte_password: str):
              "login":user.login
              }
 
+def users_search(session: Session, login: str=None,nom: str=None,prenom: str=None):
+    query = select(User)
+    if login :
+        query = query.where(User.login.like(f"%{login}%"))
+    if nom :
+        query = query.where(User.nom.like(f"%{nom}%"))
+    if prenom :
+        query = query.where(User.prenom.like(f"%{prenom}%"))
+    users = session.exec(query).all()
+    #return login+" "+nom+" "+prenom
+    return [
+        {
+            "login": u.login,
+            "nom": u.nom,
+            "prenom": u.prenom,
+            "id": u.user_public_id
+        }
+        for u in users
+    ]
 
 def get_user_by_mail(session: Session, mail: str):
     return session.exec(select(User).where(User.mail == mail)).first()
