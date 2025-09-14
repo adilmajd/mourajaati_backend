@@ -1,6 +1,7 @@
 from fastapi import HTTPException,Depends
 from fastapi.security import OAuth2PasswordBearer
-from model.User import Permission, Role, Role_Has_Permission, User, User_Has_Role
+from model.Autre import UpdateUserRoles
+from model.User import Etat, Permission, Role, Role_Has_Permission, User, User_Has_Role
 from sqlmodel import Session, select
 
 from datetime import datetime, timedelta
@@ -110,7 +111,7 @@ def login_user(session: Session,login: str,compte_password: str):
     return {
             "access_token": access_token,
              "token_type": "bearer",
-             "user_id":user.user_id, # interdit
+             "user_id":user.user_public_id, # interdit
              "roles":roles,
              "permissions":permissions,
              "login":user.login
@@ -124,8 +125,8 @@ def users_search(session: Session, login: str=None,nom: str=None,prenom: str=Non
         query = query.where(User.nom.like(f"%{nom}%"))
     if prenom :
         query = query.where(User.prenom.like(f"%{prenom}%"))
+    query = query.limit(7)
     users = session.exec(query).all()
-    #return login+" "+nom+" "+prenom
     return [
         {
             "login": u.login,
@@ -135,6 +136,90 @@ def users_search(session: Session, login: str=None,nom: str=None,prenom: str=Non
         }
         for u in users
     ]
+
+def get_roles_permissions(session: Session,user_public_id:str):
+    user = session.exec(
+        select(User).where(User.user_public_id == user_public_id)
+    ).first()
+    roles = session.exec(
+        select(Role)
+        .join(User_Has_Role, User_Has_Role.role_id == Role.role_id)
+        .where(User_Has_Role.user_id == user.user_id)
+    ).all()
+    result = []
+    for role in roles:
+        permissions = session.exec(
+            select(Permission)
+            .join(Role_Has_Permission, Role_Has_Permission.permission_id == Permission.permission_id)
+            .where(Role_Has_Permission.role_id == role.role_id)
+        ).all()
+        result.append({
+            "role_id": role.role_id,
+            "role_name": role.role_name,
+            "permissions": [p.permission_name for p in permissions]
+        })
+    return {
+        "user_public_id": user.user_public_id,
+        "roles": result
+    }
+
+def update_user_roles(session: Session,user_public_id: str,data: UpdateUserRoles):
+        user = session.get(User, user_public_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        session.exec(
+            select(User_Has_Role).where(User_Has_Role.user_id == user.user_id)
+            ).all()
+        session.query(User_Has_Role).filter(User_Has_Role.user_id == user.user_id).delete()
+        for role_id in data.role_ids:
+            session.add(User_Has_Role(user_id=user.user_id, role_id=role_id))
+
+        session.commit()
+        return {"Affection effectuée."}
+
+
+
+def get_user_etat(session: Session,user_public_id: str):
+    statement = (
+        select(User.user_public_id, Etat.etat_id, Etat.label)
+        .join(Etat, Etat.etat_id == User.etat_id)
+        .where(User.user_public_id == user_public_id)
+    )
+    result = session.exec(statement).first()
+    if not result:
+        raise HTTPException(404, "Utilisateur ou état introuvable")
+
+    user_public_id, etat_id, label = result
+    return {
+        "user_public_id": user_public_id,
+        "etat_id": etat_id,
+        "etat_label": label}
+
+def update_user_etat(session: Session, user_public_id: str, new_etat_id: int):
+    # Récupérer l'utilisateur via user_public_id
+    statement = select(User).where(User.user_public_id == user_public_id)
+    user = session.exec(statement).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+
+    # Vérifier si l'état existe
+    etat = session.get(Etat, new_etat_id)
+    if not etat:
+        raise HTTPException(status_code=404, detail="État introuvable")
+
+    # Mise à jour
+    user.etat_id = new_etat_id
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    return {
+        "message": "État mis à jour avec succès",
+        "user_public_id": user.user_public_id,
+        "etat_id": etat.etat_id,
+        "etat_libelle": etat.label   # ou etat.etat_libelle selon ton modèle
+    }
 
 def get_user_by_mail(session: Session, mail: str):
     return session.exec(select(User).where(User.mail == mail)).first()

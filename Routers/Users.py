@@ -1,11 +1,12 @@
 from fastapi import APIRouter,Depends
 from pydantic import BaseModel
 from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
-from data.user import login_user, require_permission,require_role,users_search
+from data.user import login_user, require_permission,require_role,users_search,get_roles_permissions,update_user_roles,get_user_etat,update_user_etat
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
-from model.User import Permission, Role, User
+from model.Autre import LoginRequest, UpdateUserRoles
+from model.User import Etat, Permission, Role, User
 from data.user import get_password_hash,get_me
 
 """
@@ -17,25 +18,12 @@ end point (les APIs) des Users
 /permissions/ -> gestion des permissions & affectation aux rôles.
 """
 
-class LoginRequest(BaseModel):
-    login: str
-    password: str
 
 router = APIRouter()
 
 # ======================
 # Gestion Utilisateurs
 # ======================
-
-# Adil + badrdine
-@router.get("/lire/")
-async def test_lire(user = Depends(require_permission("Lire"))):
-     return {"message":"fonction de permission lire"}
-#badrdine
-@router.get("/ecrire/")
-async def test_ecrire(user = Depends(require_permission("Ecrire"))):
-      return {"message":"fonction de permission ecrire"}
-
 
 @router.post("/users/", response_model=User)
 def add_user(user: User, session: Session = Depends(get_session)):
@@ -48,6 +36,10 @@ async def list_users(session: Session = Depends(get_session),user = Depends(requ
 @router.get("/users/{user_id}", response_model=User)
 async def get_user(user_id: int,session: Session = Depends(get_session)):
      return get_entity_by_id(session, User, user_id)
+
+@router.get("/user/{user_public_id}/roles-permissions")
+async def get_roles_permissions_r(user_public_id:str,session: Session = Depends(get_session),user = Depends(require_role("admin"))):
+     return get_roles_permissions(session,user_public_id)
 
 @router.get("/users_search/")
 async def users_search_r(login: Optional[str]=None,nom: Optional[str]=None,prenom: Optional[str]=None,session: Session = Depends(get_session),user = Depends(require_role("admin"))):
@@ -68,10 +60,19 @@ def login_user_r(request: LoginRequest, session: Session = Depends(get_session))
         return {"message" : "erreur"}
     return {"message" : "connection ok","user":user}
 
-#test_me
+
 @router.get("/test_me")
 async def test_me(data: str = Depends(get_me)):
      return {"user login":data}
+
+@router.put("/user/{user_id}/roles")
+def update_user_roles_r(user_id: str, data: UpdateUserRoles, session: Session = Depends(get_session),user = Depends(require_role("admin"))):
+  return update_user_roles(session,user_id,data)
+
+@router.get("/user/{user_id}/etat")
+def get_user_etat_r(user_id: str, session: Session = Depends(get_session)):
+    return get_user_etat(session,user_id)
+
 """
 @router.put("/{user_id}/etat/{etat_id}")
 def change_user_etat_read(user_id: int, etat_id: int, session: Session = Depends(get_session)):
@@ -100,7 +101,7 @@ def add_role(user: Role, session: Session = Depends(get_session)):
     return create_entity(session, Role)
 
 @router.get("/roles/", response_model=List[Role])
-async def list_roles(session: Session = Depends(get_session)):
+async def list_roles(session: Session = Depends(get_session),user = Depends(require_role("admin"))):
      return get_all_entities(session, Role)
 
 @router.get("/roles/{role_id}", response_model=Role)
@@ -114,6 +115,15 @@ def update_role(role_id: int, updates: dict, session: Session = Depends(get_sess
 @router.delete("/roles/{role_id}")
 def remove_role(role_id: int, session: Session = Depends(get_session)):
     return delete_entity(session, Role, role_id)
+
+
+@router.get("/etats/", response_model=List[Etat])
+async def list_etats(session: Session = Depends(get_session),user = Depends(require_role("admin"))):
+     return get_all_entities(session, Etat)
+
+@router.put("/user/{user_public_id}/etat/{etat_id}")
+async def update_user_etat_r(user_public_id: str,etat_id: int,session: Session = Depends(get_session)):
+     return update_user_etat(session,user_public_id,etat_id)
 
 """
 @router.post("/roles/{role_id}/users/{user_id}")
