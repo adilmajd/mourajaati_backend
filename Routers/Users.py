@@ -5,7 +5,7 @@ from data.user import login_user, require_permission,require_role,users_search,g
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
-from model.Autre import LoginRequest, UpdateUserRoles
+from model.Autre import LoginRequest, RoleCreate, UpdateUserRoles
 from model.User import Etat, Permission, Role, User
 from data.user import get_password_hash,get_me
 
@@ -97,8 +97,9 @@ async def hash_users(session: Session = Depends(get_session)):
 # Rôles
 
 @router.post("/roles/", response_model=Role)
-def add_role(user: Role, session: Session = Depends(get_session)):
-    return create_entity(session, Role)
+def add_role(role:RoleCreate, session: Session = Depends(get_session),user = Depends(require_role("admin"))):
+    db_role = Role(role_name=role.role_name)
+    return create_entity(session, db_role)
 
 @router.get("/roles/", response_model=List[Role])
 async def list_roles(session: Session = Depends(get_session),user = Depends(require_role("admin"))):
