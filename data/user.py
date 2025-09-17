@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import HTTPException,Depends
 from fastapi.security import OAuth2PasswordBearer
 from model.Autre import UpdateUserRoles
@@ -294,3 +295,59 @@ def delete_permission(session: Session, permission_id: int):
     session.delete(permission)
     session.commit()
     return {"message": "Permission supprimée avec succès"}
+
+
+def get_role_permissions(role_id: int, session: Session):
+    role = session.get(Role, role_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role non trouvé")
+    all_permissions = session.exec(select(Permission)).all()
+    role_permission_ids = {perm.permission_id for perm in role.permissions}
+    permissions_with_status = [
+        {
+            "permission_id": perm.permission_id,
+            "permission_name": perm.permission_name,
+            "checked": perm.permission_id in role_permission_ids,
+        }
+        for perm in all_permissions
+    ]
+
+    return {
+        "role_id": role.role_id,
+        "role_name": role.role_name,
+        "permissions": permissions_with_status
+    }
+
+def update_role_permissions(role_id: int,permission_ids: List[int],session: Session):
+    role = session.get(Role, role_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+
+    # Charger les permissions valides
+    permissions = session.exec(
+        select(Permission).where(Permission.permission_id.in_(permission_ids))
+    ).all()
+
+    # Associer uniquement celles envoyées
+    role.permissions = permissions  
+
+    session.add(role)
+    session.commit()
+    session.refresh(role)
+    return {"message": "Permissions mises à jour avec succès", "role": role}
+
+def add_permission_to_role(role_id: int, permission_id: int, session: Session):
+    session.add(Role_Has_Permission(role_id=role_id, permission_id=permission_id))
+    session.commit()
+    return {"message": "Permission associée"}
+
+def remove_permission_from_role(role_id: int, permission_id: int, session: Session):
+    stmt = select(Role_Has_Permission).where(
+        Role_Has_Permission.role_id == role_id,
+        Role_Has_Permission.permission_id == permission_id
+    )
+    link = session.exec(stmt).first()
+    if link:
+        session.delete(link)
+        session.commit()
+    return {"message": "Permission supprimée"}

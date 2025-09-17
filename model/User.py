@@ -27,10 +27,18 @@ class Etat(SQLModel, table=True):
     label: str = Field(max_length=20, unique=True)
 
 
+class Role_Has_Permission(SQLModel, table=True):
+    role_id: int = Field(foreign_key="role.role_id", primary_key=True)
+    permission_id: int = Field(foreign_key="permission.permission_id", primary_key=True)
+
 
 class Role(SQLModel, table=True):
     role_id: Optional[int] = Field(default=None, primary_key=True)
     role_name: str = Field(max_length=20)
+    permissions: List["Permission"] = Relationship(
+    back_populates="roles", link_model=Role_Has_Permission
+    )
+
 
 class User_Has_Role(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.user_id", primary_key=True)
@@ -40,9 +48,8 @@ class User_Has_Role(SQLModel, table=True):
 class Permission(SQLModel, table=True):
     permission_id: Optional[int] = Field(default=None, primary_key=True)
     permission_name: str = Field(max_length=20)
+    roles: List[Role] = Relationship(
+    back_populates="permissions", link_model=Role_Has_Permission
+    )
 
-
-class Role_Has_Permission(SQLModel, table=True):
-    role_id: int = Field(foreign_key="role.role_id", primary_key=True)
-    permission_id: int = Field(foreign_key="permission.permission_id", primary_key=True)
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Depends
 from pydantic import BaseModel
 from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
-from data.user import login_user, require_permission,require_role,users_search,get_roles_permissions,update_user_roles,get_user_etat,update_user_etat,delete_role,delete_permission
+from data.user import login_user, require_permission,require_role,users_search,get_roles_permissions,update_user_roles,get_user_etat,update_user_etat,delete_role,delete_permission,get_role_permissions,add_permission_to_role,remove_permission_from_role
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
@@ -144,7 +144,7 @@ def add_permission(permission:PermissionCreate, session: Session = Depends(get_s
     return create_entity(session, db_permission)
 
 @router.get("/permissions/", response_model=List[Permission])
-async def list_permissions(session: Session = Depends(get_session)):
+async def list_permissions(session: Session = Depends(get_session),user = Depends(require_role("admin"))):
      return get_all_entities(session, Permission)
 
 @router.get("/permissions/{permission_id}", response_model=Permission)
@@ -159,13 +159,15 @@ def update_permission(permission_id: int, updates: dict, session: Session = Depe
 def remove_permission(permission_id: int, session: Session = Depends(get_session),user = Depends(require_role("admin"))):
     return delete_permission(session, permission_id)
 
-"""
-@router.post("/permissions/{permission_id}/roles/{role_id}")
-def assign_permission_to_role_read(permission_id: int, role_id: int, session: Session = Depends(get_session)):
-    return assign_permission_to_role(session, role_id, permission_id)
+@router.get("/roles/{role_id}/permissions")
+async def get_role_permissions_r(role_id: int, session: Session = Depends(get_session),user = Depends(require_role("admin"))):
+     return get_role_permissions(role_id, session)
 
+@router.post("/roles/{role_id}/permissions/{permission_id}")
+def add_permission_to_role_r(role_id: int, permission_id: int, session: Session = Depends(get_session)):
+    return add_permission_to_role(role_id,permission_id,session)
 
-@router.delete("/permissions/{permission_id}")
-def delete_permission_read(permission_id: int, session: Session = Depends(get_session)):
-    return delete_permission(session, permission_id)
-"""
+@router.delete("/roles/{role_id}/permissions/{permission_id}")
+def remove_permission_from_role_r(role_id: int, permission_id: int, session: Session = Depends(get_session),user = Depends(require_role("admin"))):
+    return remove_permission_from_role(role_id,permission_id,session)
+
