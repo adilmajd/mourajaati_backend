@@ -258,9 +258,22 @@ def remove_role_from_user(session: Session, user_id: int, role_id: int):
     session.commit()
     return {"message": "Rôle retiré"}
 
+def delete_role(session: Session ,role_id: int ):
+    role = session.get(Role, role_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role non trouvé")
+    statement = select(Role_Has_Permission).where(Role_Has_Permission.role_id == role_id)
+    results = session.exec(statement).all()
+    for r in results:
+        session.delete(r)
+    session.flush() 
+    session.delete(role)
+    session.commit()
+    return {"message": f"Role {role.role_name} supprimé avec toutes ses permissions"}
+
+
 
 # ---- PERMISSIONS ----
-
 
 def assign_permission_to_role(session: Session, role_id: int, permission_id: int):
     link = Role_Has_Permission(role_id=role_id, permission_id=permission_id)
@@ -269,3 +282,15 @@ def assign_permission_to_role(session: Session, role_id: int, permission_id: int
     return {"message": "Permission assignée"}
 
 
+def delete_permission(session: Session, permission_id: int):
+    stmt = select(Role_Has_Permission).where(Role_Has_Permission.permission_id == permission_id)
+    relations = session.exec(stmt).all()
+    for rel in relations:
+        session.delete(rel)
+    session.flush() 
+    permission = session.get(Permission, permission_id)
+    if not permission:
+        raise HTTPException(404, "Permission not found")
+    session.delete(permission)
+    session.commit()
+    return {"message": "Permission supprimée avec succès"}

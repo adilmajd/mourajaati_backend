@@ -11,3 +11,6 @@ class UpdateUserRoles(BaseModel):
 
 class RoleCreate(BaseModel):
     role_name: str
+
+class PermissionCreate(BaseModel):
+    permission_name: str

@@ -1,11 +1,11 @@
 from fastapi import APIRouter,Depends
 from pydantic import BaseModel
 from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
-from data.user import login_user, require_permission,require_role,users_search,get_roles_permissions,update_user_roles,get_user_etat,update_user_etat
+from data.user import login_user, require_permission,require_role,users_search,get_roles_permissions,update_user_roles,get_user_etat,update_user_etat,delete_role,delete_permission
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
-from model.Autre import LoginRequest, RoleCreate, UpdateUserRoles
+from model.Autre import LoginRequest, RoleCreate, UpdateUserRoles,PermissionCreate
 from model.User import Etat, Permission, Role, User
 from data.user import get_password_hash,get_me
 
@@ -114,8 +114,8 @@ def update_role(role_id: int, updates: dict, session: Session = Depends(get_sess
     return update_entity(session, Role, role_id, updates)
 
 @router.delete("/roles/{role_id}")
-def remove_role(role_id: int, session: Session = Depends(get_session)):
-    return delete_entity(session, Role, role_id)
+def remove_role(role_id: int, session: Session = Depends(get_session),user = Depends(require_role("admin"))):
+    return delete_role(session, role_id)
 
 
 @router.get("/etats/", response_model=List[Etat])
@@ -139,8 +139,9 @@ def remove_role_from_user_read(role_id: int, user_id: int, session: Session = De
 # Permissions
 
 @router.post("/permissions/", response_model=Permission)
-def add_permission(user: Permission, session: Session = Depends(get_session)):
-    return create_entity(session, Permission)
+def add_permission(permission:PermissionCreate, session: Session = Depends(get_session),user = Depends(require_role("admin"))):
+    db_permission = Permission(permission_name=permission.permission_name)
+    return create_entity(session, db_permission)
 
 @router.get("/permissions/", response_model=List[Permission])
 async def list_permissions(session: Session = Depends(get_session)):
@@ -155,8 +156,8 @@ def update_permission(permission_id: int, updates: dict, session: Session = Depe
     return update_entity(session, Permission, permission_id, updates)
 
 @router.delete("/permissions/{permission_id}")
-def remove_permission(permission_id: int, session: Session = Depends(get_session)):
-    return delete_entity(session, Permission, permission_id)
+def remove_permission(permission_id: int, session: Session = Depends(get_session),user = Depends(require_role("admin"))):
+    return delete_permission(session, permission_id)
 
 """
 @router.post("/permissions/{permission_id}/roles/{role_id}")
