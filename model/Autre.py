@@ -43,3 +43,7 @@ class NiveauOut(BaseModel):
 
     class Config:
         orm_mode = True  
+
+
+class UpdateUserNiveau(BaseModel):
+    niveau_id: int
