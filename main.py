@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 from database.base import get_session
 from Routers import Users,Root, Base,Cours
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 
 
@@ -28,3 +29,4 @@ app.include_router(Root.router)
 app.include_router(Users.router,prefix="/users", tags=["users"])
 app.include_router(Base.router,prefix="/base", tags=["base"])
 app.include_router(Cours.router,prefix="/cours", tags=["cours"])
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")

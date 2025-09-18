@@ -1,13 +1,14 @@
-from fastapi import APIRouter,Depends
+from fastapi import APIRouter,Depends,UploadFile
 from pydantic import BaseModel
 from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
-from data.user import login_user, require_permission,require_role,users_search,get_roles_permissions,update_user_roles,get_user_etat,update_user_etat,delete_role,delete_permission,get_role_permissions,add_permission_to_role,remove_permission_from_role
+from data.user import login_user, require_permission,require_role,users_search,get_roles_permissions,update_user_roles,get_user_etat,update_user_etat,delete_role,delete_permission,get_role_permissions,add_permission_to_role,remove_permission_from_role,upload_avatar,get_avatar
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
 from model.Autre import LoginRequest, RoleCreate, UpdateUserRoles,PermissionCreate
 from model.User import Etat, Permission, Role, User
 from data.user import get_password_hash,get_me
+from fastapi.staticfiles import StaticFiles
 
 """
 end point (les APIs) des Users
@@ -72,6 +73,18 @@ def update_user_roles_r(user_id: str, data: UpdateUserRoles, session: Session = 
 @router.get("/user/{user_id}/etat")
 def get_user_etat_r(user_id: str, session: Session = Depends(get_session)):
     return get_user_etat(session,user_id)
+
+@router.post("/user/{user_id}/avatar")
+def upload_avatar_r(user_id: str,file: UploadFile,session: Session = Depends(get_session),user = Depends(require_permission("avatar"))):
+    return upload_avatar(user_id,file,session)
+
+
+
+@router.get("/user/{user_id}/avatar")
+def get_avatar_r(user_id: str,session: Session = Depends(get_session),user = Depends(require_permission("avatar"))):
+    return get_avatar(user_id,session)
+
+
 
 """
 @router.put("/{user_id}/etat/{etat_id}")

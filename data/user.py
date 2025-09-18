@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import HTTPException,Depends
+from fastapi import HTTPException,Depends,UploadFile,status
 from fastapi.security import OAuth2PasswordBearer
 from model.Autre import UpdateUserRoles
 from model.User import Etat, Permission, Role, Role_Has_Permission, User, User_Has_Role
@@ -9,9 +9,16 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
+import os
+import shutil
+
 """
 
 """
+
+UPLOAD_DIR = "uploads/avatars"
+
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # .env 
 SECRET_KEY="123456789abcdefghijklmop_Khalid_Abdelah_Badrdine_Adil"
@@ -238,6 +245,55 @@ def change_user_etat(session: Session, user_id: int, etat_id: int):
     session.refresh(user)
     return user
 
+def upload_avatar(user_public_id: int,file: UploadFile,session: Session):
+
+    ext = file.filename.split(".")[-1].lower()
+    if ext not in {"jpg", "jpeg", "png"}:
+        raise HTTPException(status_code=400, detail="Format non supporté (jpg, jpeg, png uniquement).")
+
+    user = session.get(User, user_public_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+
+    if user.avatar and os.path.exists(user.avatar):
+        try:
+            os.remove(user.avatar)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression de l'ancien avatar: {str(e)}")
+
+    new_filename = f"user_{user_public_id}.{ext}"
+    file_path = os.path.join(UPLOAD_DIR, new_filename)
+
+    os.makedirs(UPLOAD_DIR, exist_ok=True)  # créer le dossier si inexistant
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    user.avatar = file_path.replace("\\", "/")  # normaliser pour éviter les backslashes
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    return {"message": "Avatar mis à jour", "avatar": user.avatar}
+
+
+
+def get_avatar(user_public_id: int,session: Session):
+    statement = select(User).where(User.user_public_id == user_public_id)
+    user = session.exec(statement).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur introuvable"
+        )
+
+    if not user.avatar:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Avatar non défini pour cet utilisateur"
+        )
+
+    return user.avatar
 
 # ======================
 # Gestion Rôle & Permissions
@@ -322,13 +378,11 @@ def update_role_permissions(role_id: int,permission_ids: List[int],session: Sess
     role = session.get(Role, role_id)
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
-
-    # Charger les permissions valides
+    
     permissions = session.exec(
         select(Permission).where(Permission.permission_id.in_(permission_ids))
-    ).all()
+        ).all()
 
-    # Associer uniquement celles envoyées
     role.permissions = permissions  
 
     session.add(role)
