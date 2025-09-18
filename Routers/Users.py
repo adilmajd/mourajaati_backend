@@ -85,7 +85,7 @@ def get_avatar_r(user_id: str,session: Session = Depends(get_session),user = Dep
     return get_avatar(user_id,session)
 
 @router.put("/user/{user_id}/password")
-def update_password_r(user_id: str,passwords: PasswordUpdate,session: Session = Depends(get_session)):
+def update_password_r(user_id: str,passwords: PasswordUpdate,session: Session = Depends(get_session),user = Depends(require_permission("mod_password"))):
     return update_password(user_id,passwords,session)
 
 """

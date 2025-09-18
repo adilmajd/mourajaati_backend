@@ -24,3 +24,22 @@ class PasswordUpdate(BaseModel):
         if "password1" in values and v != values["password1"]:
             raise ValueError("Les mots de passe ne correspondent pas")
         return v
+    
+
+class NiveauRead(BaseModel):
+    niveau_id: int
+    niveau_label: str
+    order: int
+    cycle_id: int
+
+    class Config:
+        from_attributes = True
+
+class NiveauOut(BaseModel):
+    niveau_id: int
+    niveau_label: str
+    order: int
+    cycle_id: int
+
+    class Config:
+        orm_mode = True  

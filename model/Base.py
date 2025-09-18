@@ -26,6 +26,7 @@ class CodePostale(SQLModel, table=True):
 class Cycle(SQLModel, table=True):
     cycle_id: Optional[int] = Field(default=None, primary_key=True)
     label: str = Field(max_length=20, unique=True)
+    order: int = Field()
     # Relation avec Ecole
     ecoles: List["Ecole"] = Relationship(back_populates="cycle")
     # Relation avec Grade
@@ -45,6 +46,7 @@ class Ecole(SQLModel, table=True):
 class Niveau(SQLModel, table=True):
     niveau_id: Optional[int] = Field(default=None, primary_key=True)
     niveau_label: str = Field(max_length=20)
+    order: int = Field()
     cycle_id: int = Field(foreign_key="cycle.cycle_id")
     # Relation inverse
     cycle: Optional[Cycle] = Relationship(back_populates="niveaux")

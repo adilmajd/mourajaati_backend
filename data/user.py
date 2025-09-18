@@ -2,6 +2,7 @@ from typing import List
 from fastapi import HTTPException,Depends,UploadFile,status
 from fastapi.security import OAuth2PasswordBearer
 from model.Autre import PasswordUpdate, UpdateUserRoles
+from model.Base import Niveau
 from model.User import Etat, Permission, Role, Role_Has_Permission, User, User_Has_Role
 from sqlmodel import Session, select
 
@@ -306,6 +307,8 @@ def update_password(user_public_id: str,passwords: PasswordUpdate,session: Sessi
     session.refresh(user)
     
     return {"message": "Mot de passe mis à jour"}
+
+
 # ======================
 # Gestion Rôle & Permissions
 # ======================
