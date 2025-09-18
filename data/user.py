@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import HTTPException,Depends,UploadFile,status
 from fastapi.security import OAuth2PasswordBearer
-from model.Autre import UpdateUserRoles
+from model.Autre import PasswordUpdate, UpdateUserRoles
 from model.User import Etat, Permission, Role, Role_Has_Permission, User, User_Has_Role
 from sqlmodel import Session, select
 
@@ -295,6 +295,17 @@ def get_avatar(user_public_id: int,session: Session):
 
     return user.avatar
 
+def update_password(user_public_id: str,passwords: PasswordUpdate,session: Session):
+    user = session.exec(select(User).where(User.user_public_id == user_public_id)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    
+    user.compte_password = get_password_hash(passwords.password1) 
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    
+    return {"message": "Mot de passe mis à jour"}
 # ======================
 # Gestion Rôle & Permissions
 # ======================

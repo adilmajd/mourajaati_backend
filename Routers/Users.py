@@ -1,11 +1,11 @@
 from fastapi import APIRouter,Depends,UploadFile
 from pydantic import BaseModel
 from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
-from data.user import login_user, require_permission,require_role,users_search,get_roles_permissions,update_user_roles,get_user_etat,update_user_etat,delete_role,delete_permission,get_role_permissions,add_permission_to_role,remove_permission_from_role,upload_avatar,get_avatar
+from data.user import login_user, require_permission,require_role, update_password,users_search,get_roles_permissions,update_user_roles,get_user_etat,update_user_etat,delete_role,delete_permission,get_role_permissions,add_permission_to_role,remove_permission_from_role,upload_avatar,get_avatar
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
-from model.Autre import LoginRequest, RoleCreate, UpdateUserRoles,PermissionCreate
+from model.Autre import LoginRequest, PasswordUpdate, RoleCreate, UpdateUserRoles,PermissionCreate
 from model.User import Etat, Permission, Role, User
 from data.user import get_password_hash,get_me
 from fastapi.staticfiles import StaticFiles
@@ -84,7 +84,9 @@ def upload_avatar_r(user_id: str,file: UploadFile,session: Session = Depends(get
 def get_avatar_r(user_id: str,session: Session = Depends(get_session),user = Depends(require_permission("avatar"))):
     return get_avatar(user_id,session)
 
-
+@router.put("/user/{user_id}/password")
+def update_password_r(user_id: str,passwords: PasswordUpdate,session: Session = Depends(get_session)):
+    return update_password(user_id,passwords,session)
 
 """
 @router.put("/{user_id}/etat/{etat_id}")

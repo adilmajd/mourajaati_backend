@@ -20,7 +20,7 @@ class User(SQLModel, table=True):
     etat_id: int = Field(foreign_key="etat.etat_id")
     ecole_id: int = Field(foreign_key="ecole.ecole_id")
     ville_id: int = Field(foreign_key="ville.ville_id")
-    grade_id: int = Field(foreign_key="grade.grade_id")
+    niveau_id: int = Field(foreign_key="niveau.niveau_id")
     
 class Etat(SQLModel, table=True):
     etat_id: Optional[int] = Field(default=None, primary_key=True)

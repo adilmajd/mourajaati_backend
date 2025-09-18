@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,validator
 from typing import List, Optional
 
 
@@ -14,3 +14,13 @@ class RoleCreate(BaseModel):
 
 class PermissionCreate(BaseModel):
     permission_name: str
+
+class PasswordUpdate(BaseModel):
+    password1: str
+    password2: str
+
+    @validator("password2")
+    def passwords_match(cls, v, values):
+        if "password1" in values and v != values["password1"]:
+            raise ValueError("Les mots de passe ne correspondent pas")
+        return v

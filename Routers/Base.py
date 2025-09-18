@@ -3,7 +3,7 @@ from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
-from model.Base import CodePostale, Ecole, Grade, Niveau, Ville
+from model.Base import CodePostale, Ecole, Cycle, Niveau, Ville
 
 """
 
@@ -44,14 +44,14 @@ def list_cp(session: Session = Depends(get_session)):
     return get_all_entities(session, CodePostale)
 
 
-# ---- NIVEAU ----
-@router.post("/niveaux/", response_model=Niveau)
-def add_niveau(niveau: Niveau, session: Session = Depends(get_session)):
-    return create_entity(session, niveau)
+# ---- Cycle ---- cycle
+@router.post("/cycles/", response_model=Cycle)
+def add_niveau(cycle: Cycle, session: Session = Depends(get_session)):
+    return create_entity(session, cycle)
 
-@router.get("/niveaux/", response_model=List[Niveau])
-def list_niveaux(session: Session = Depends(get_session)):
-    return get_all_entities(session, Niveau)
+@router.get("/cycles/", response_model=List[Cycle])
+def list_niveaux(cycle: Session = Depends(get_session)):
+    return get_all_entities(cycle, Cycle)
 
 
 # ---- ECOLE ----
@@ -65,10 +65,10 @@ def list_ecoles(session: Session = Depends(get_session)):
 
 
 # ---- GRADE ----
-@router.post("/grades/", response_model=Grade)
-def add_grade(grade: Grade, session: Session = Depends(get_session)):
-    return create_entity(session, grade)
+@router.post("/niveaux/", response_model=Niveau)
+def add_grade(niveau: Niveau, session: Session = Depends(get_session)):
+    return create_entity(session, niveau)
 
-@router.get("/grades/", response_model=List[Grade])
+@router.get("/niveaux/", response_model=List[Niveau])
 def list_grades(session: Session = Depends(get_session)):
-    return get_all_entities(session, Grade)
+    return get_all_entities(session, Niveau)

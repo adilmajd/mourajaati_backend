@@ -11,7 +11,7 @@ class Cours(SQLModel, table=True):
     video: Optional[str] = Field(max_length=20, default=None)
     audio: Optional[str] = Field(max_length=20, default=None)
     url: Optional[str] = Field(max_length=20, default=None)
-    grade_id: int = Field(foreign_key="grade.grade_id")
+    niveau_id: int = Field(foreign_key="niveau.niveau_id")
     user_id: int = Field(foreign_key="user.user_id")
 
 
@@ -45,7 +45,7 @@ class Examen(SQLModel, table=True):
     examen_id: Optional[int] = Field(default=None, primary_key=True)
     examen_contenu: Optional[str]
     examen_corrige: Optional[str]
-    grade_id: int = Field(foreign_key="grade.grade_id")
+    niveau_id: int = Field(foreign_key="niveau.niveau_id")
 
 
 class UserExamen(SQLModel, table=True):
