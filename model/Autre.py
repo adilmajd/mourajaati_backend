@@ -47,3 +47,18 @@ class NiveauOut(BaseModel):
 
 class UpdateUserNiveau(BaseModel):
     niveau_id: int
+
+class UserDetailResponse(BaseModel):
+    nom: str
+    prenom: str
+    mail: str
+    date_naissance: Optional[str]
+    avatar: Optional[str]
+    login: str
+    telephone: Optional[str]
+    ecole_nom: Optional[str]
+    niveau_label: Optional[str]
+    cycle_label: Optional[str]
+
+    class Config:
+        from_attributes = True   # (remplace orm_mode en Pydantic v2)

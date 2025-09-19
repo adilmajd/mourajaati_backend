@@ -1,9 +1,10 @@
 from typing import List
 from fastapi import HTTPException,Depends,UploadFile,status
 from fastapi.security import OAuth2PasswordBearer
-from model.Autre import PasswordUpdate, UpdateUserRoles
-from model.Base import Niveau
+from model.Autre import PasswordUpdate, UpdateUserRoles, UserDetailResponse
+from model.Base import Cycle, Ecole, Niveau
 from model.User import Etat, Permission, Role, Role_Has_Permission, User, User_Has_Role
+#from model.model import Etat, Permission, Role, Role_Has_Permission, User, User_Has_Role,Cycle, Ecole, Niveau
 from sqlmodel import Session, select
 
 from datetime import datetime, timedelta
@@ -309,6 +310,32 @@ def update_password(user_public_id: str,passwords: PasswordUpdate,session: Sessi
     return {"message": "Mot de passe mis à jour"}
 
 
+def get_user_details(user_public_id: str, session: Session):
+
+    query = (
+        select(User,Cycle,Niveau,Ecole)
+        .join(Ecole, Ecole.ecole_id == User.ecole_id, isouter=True)
+        .join(Niveau, Niveau.niveau_id == User.niveau_id, isouter=True)
+        .join(Cycle, Cycle.cycle_id == Niveau.cycle_id, isouter=True)
+        .where(User.user_public_id == user_public_id)
+    )
+
+    result = session.exec(query).first()
+    if not result:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+
+    user,cycle,niveau,ecole = result
+    return {"nom":user.nom,
+        "prenom":user.prenom,
+        "mail":user.mail,
+        "date_naissance":user.date_naissance,
+        "avatar":user.avatar,
+        "login":user.login,
+        "telephone":user.telephone,
+        "ecole_nom":ecole.nom if ecole else None,
+        "niveau_nom":niveau.niveau_label if niveau else None,
+        "cycle_nom":cycle.label if cycle else None,
+            }
 # ======================
 # Gestion Rôle & Permissions
 # ======================
