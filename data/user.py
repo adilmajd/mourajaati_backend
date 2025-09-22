@@ -2,9 +2,9 @@ from typing import List
 from fastapi import HTTPException,Depends,UploadFile,status
 from fastapi.security import OAuth2PasswordBearer
 from model.Autre import PasswordUpdate, UpdateUserRoles, UserDetailResponse
-from model.Base import Cycle, Ecole, Niveau
+from model.Base import Cycle, Niveau
 from model.User import Etat, Permission, Role, Role_Has_Permission, User, User_Has_Role
-#from model.model import Etat, Permission, Role, Role_Has_Permission, User, User_Has_Role,Cycle, Ecole, Niveau
+#from model.model import Etat, Permission, Role, Role_Has_Permission, User, User_Has_Role,Cycle, Niveau
 from sqlmodel import Session, select
 
 from datetime import datetime, timedelta
@@ -313,8 +313,7 @@ def update_password(user_public_id: str,passwords: PasswordUpdate,session: Sessi
 def get_user_details(user_public_id: str, session: Session):
 
     query = (
-        select(User,Cycle,Niveau,Ecole)
-        .join(Ecole, Ecole.ecole_id == User.ecole_id, isouter=True)
+        select(User,Cycle,Niveau)
         .join(Niveau, Niveau.niveau_id == User.niveau_id, isouter=True)
         .join(Cycle, Cycle.cycle_id == Niveau.cycle_id, isouter=True)
         .where(User.user_public_id == user_public_id)
@@ -324,7 +323,7 @@ def get_user_details(user_public_id: str, session: Session):
     if not result:
         raise HTTPException(status_code=404, detail="Utilisateur introuvable")
 
-    user,cycle,niveau,ecole = result
+    user,cycle,niveau = result
     return {"nom":user.nom,
         "prenom":user.prenom,
         "mail":user.mail,
@@ -332,7 +331,6 @@ def get_user_details(user_public_id: str, session: Session):
         "avatar":user.avatar,
         "login":user.login,
         "telephone":user.telephone,
-        "ecole_nom":ecole.nom if ecole else None,
         "niveau_nom":niveau.niveau_label if niveau else None,
         "cycle_nom":cycle.label if cycle else None,
             }

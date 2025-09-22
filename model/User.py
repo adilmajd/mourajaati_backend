@@ -18,8 +18,6 @@ class User(SQLModel, table=True):
     telephone: Optional[str] = Field(max_length=20, default=None)
     user_public_id: str = Field(max_length=99, unique=True)
     etat_id: int = Field(foreign_key="etat.etat_id")
-    ecole_id: int = Field(foreign_key="ecole.ecole_id")
-    ville_id: int = Field(foreign_key="ville.ville_id")
     niveau_id: int = Field(foreign_key="niveau.niveau_id")
     
 class Etat(SQLModel, table=True):
