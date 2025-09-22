@@ -13,6 +13,11 @@ class Cours(SQLModel, table=True):
     url: Optional[str] = Field(max_length=20, default=None)
     niveau_id: int = Field(foreign_key="niveau.niveau_id")
     user_id: int = Field(foreign_key="user.user_id")
+    type_cours_id: int = Field(foreign_key="typecours.type_cours_id")
+
+class Typecours(SQLModel, table=True):
+    type_cours_id: Optional[int] = Field(default=None, primary_key=True)
+    type_cours_nom: str = Field(max_length=45)
 
 
 class Exercice(SQLModel, table=True):
