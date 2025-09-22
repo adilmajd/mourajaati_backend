@@ -65,3 +65,31 @@ class UserDetailResponse(BaseModel):
 
 class TypeCreate(BaseModel):
     type_cours_nom: str
+
+
+###################################
+class NiveauRead(BaseModel):
+    niveau_id: int
+    niveau_label: str
+    class Config:
+        from_attributes = True
+
+class TypeCoursRead(BaseModel):
+    type_cours_id: int
+    type_cours_nom: str
+    class Config:
+        from_attributes = True
+
+class CoursRead(BaseModel):
+    cours_id: int
+    cours_titre: str
+    niveau: NiveauRead
+    type_cours: TypeCoursRead
+    class Config:
+        from_attributes = True
+
+class CoursUpdate(BaseModel):
+    niveau_id: int
+    type_cours_id: int
+    class Config:
+        from_attributes = True

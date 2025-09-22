@@ -1,10 +1,11 @@
 from fastapi import APIRouter,Depends
 from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
+from data.cours import list_cours_nv_type, update_cours_nv_type
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
 
-from model.Autre import TypeCreate
+from model.Autre import CoursRead, CoursUpdate, TypeCreate
 from model.Cours import Cours, Examen, Exercice, Post, Comment, Typecours, UserExamen, UserExercice
 
 """
@@ -35,6 +36,17 @@ def update_cours(cours_id: int, updates: dict, session: Session = Depends(get_se
 def delete_cours(cours_id: int, session: Session = Depends(get_session)):
     return delete_entity(session, Cours, cours_id)
 
+
+
+
+@router.get("/cours_nv_typ/", response_model=List[CoursRead])
+def list_cours_nv_type_r(session: Session = Depends(get_session)):
+    return list_cours_nv_type(session)
+
+@router.put("/cours/{cours_id}", response_model=CoursRead)
+def update_cours_nv_type_r(cours_id: int, data: CoursUpdate, session: Session = Depends(get_session)):
+    return update_cours_nv_type(cours_id,data,session)
+  
 
 # ---- EXERCICE ----
 @router.post("/exercices/", response_model=Exercice)
