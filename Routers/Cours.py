@@ -4,7 +4,8 @@ from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
 
-from model.Cours import Cours, Examen, Exercice, Post, Comment, UserExamen, UserExercice
+from model.Autre import TypeCreate
+from model.Cours import Cours, Examen, Exercice, Post, Comment, Typecours, UserExamen, UserExercice
 
 """
 
@@ -93,3 +94,23 @@ def add_user_exercice(user_exercice: UserExercice, session: Session = Depends(ge
 @router.get("/user_exercices/", response_model=List[UserExercice])
 def list_user_exercices(session: Session = Depends(get_session)):
     return get_all_entities(session, UserExercice)
+
+
+# ---- type ----
+@router.post("/type/", response_model=Typecours)
+def add_type(type: TypeCreate, session: Session = Depends(get_session)):
+    db_type = Typecours(type_cours_nom=type.type_cours_nom)
+    return create_entity(session, db_type)
+
+
+@router.get("/types/", response_model=List[Typecours])
+async def list_types(session: Session = Depends(get_session)):
+     return get_all_entities(session, Typecours)
+
+@router.put("/type/{type_cours_id}", response_model=Typecours)
+def update_role(type_cours_id: int, updates: dict, session: Session = Depends(get_session)):
+    return update_entity(session, Typecours, type_cours_id, updates)
+
+@router.delete("/type/{type_cours_id}")
+def remove_type(type_cours_id: int, session: Session = Depends(get_session)):
+    return delete_entity(session,Typecours,type_cours_id)

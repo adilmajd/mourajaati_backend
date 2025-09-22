@@ -62,3 +62,6 @@ class UserDetailResponse(BaseModel):
 
     class Config:
         from_attributes = True   # (remplace orm_mode en Pydantic v2)
+
+class TypeCreate(BaseModel):
+    type_cours_nom: str
