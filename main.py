@@ -1,14 +1,8 @@
 # main.py
-
-from typing import Annotated,Optional
-from fastapi import Depends, FastAPI, HTTPException, Query
-from sqlmodel import Session, select
-from database.base import get_session
+from fastapi import FastAPI
 from Routers import Users,Root, Base,Cours
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-
-
 
 app = FastAPI()
 

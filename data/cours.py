@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlmodel import Session, select
 from data.CRUD import create_entity
-from model.Autre import CoursCreate, CoursCreateAdd, CoursRead, CoursUpdate, NiveauRead, TypeCoursRead
+from model.Autre import CoursCreate, CoursCreateAdd, CoursRead, CoursReadUser, CoursUpdate, NiveauRead, TypeCoursRead
 from model.Base import Niveau
 from model.Cours import Comment, Cours, Exercice, Post, Typecours, UserExercice
 from model.User import User  # ton fichier connexion DB
@@ -24,6 +24,22 @@ def list_cours_nv_type(session: Session):
         ))
     return cours_list
 
+def list_cours_type(niveau_id:int,session: Session):
+    statement = (
+        select(Cours, Typecours)
+        .join(Typecours, Cours.type_cours_id == Typecours.type_cours_id)
+        .where(Cours.niveau_id==niveau_id)
+    )
+    results = session.exec(statement).all()
+
+    cours_list = []
+    for cours, type_cours in results:
+        cours_list.append(CoursReadUser(
+            cours_id=cours.cours_id,
+            cours_titre=cours.cours_titre,
+            type_cours=TypeCoursRead.from_orm(type_cours)
+        ))
+    return cours_list
 
 
 def update_cours_nv_type(cours_id: int, data: CoursUpdate, session: Session):
@@ -84,7 +100,6 @@ def add_cours(cours: CoursCreate, session: Session):
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur introuvable")
 
-    # créer le nouveau cours avec user_id trouvé
     new_cours = Cours(
         user_id=user.user_id,
         cours_titre=cours.cours_titre,

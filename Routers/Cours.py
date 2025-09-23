@@ -1,11 +1,11 @@
 from fastapi import APIRouter,Depends
 from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
-from data.cours import add_cours, delete_cours_post_exercice, list_cours_nv_type, update_cours_nv_type
+from data.cours import add_cours, delete_cours_post_exercice, list_cours_nv_type, list_cours_type, update_cours_nv_type
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
 
-from model.Autre import CoursCreate, CoursRead, CoursUpdate, TypeCreate
+from model.Autre import CoursCreate, CoursRead, CoursReadUser, CoursUpdate, TypeCreate
 from model.Cours import Cours, Examen, Exercice, Post, Comment, Typecours, UserExamen, UserExercice
 
 """
@@ -51,6 +51,11 @@ def delete_cours(cours_id: int, session: Session = Depends(get_session)):
 @router.get("/cours_nv_typ/", response_model=List[CoursRead])
 def list_cours_nv_type_r(session: Session = Depends(get_session)):
     return list_cours_nv_type(session)
+
+@router.get("/cours_typ/{niveau_id}", response_model=List[CoursReadUser])
+def list_cours_type_r(niveau_id: int,session: Session = Depends(get_session)):
+    return list_cours_type(niveau_id,session)
+
 
 @router.put("/cour/{cours_id}", response_model=CoursRead)
 def update_cours_nv_type_r(cours_id: int, data: CoursUpdate, session: Session = Depends(get_session)):
@@ -122,7 +127,6 @@ def list_user_exercices(session: Session = Depends(get_session)):
 def add_type(type: TypeCreate, session: Session = Depends(get_session)):
     db_type = Typecours(type_cours_nom=type.type_cours_nom)
     return create_entity(session, db_type)
-
 
 @router.get("/types/", response_model=List[Typecours])
 async def list_types(session: Session = Depends(get_session)):

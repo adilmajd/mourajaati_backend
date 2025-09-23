@@ -88,6 +88,13 @@ class CoursRead(BaseModel):
     class Config:
         from_attributes = True
 
+class CoursReadUser(BaseModel):
+    cours_id: int
+    cours_titre: str
+    type_cours: TypeCoursRead
+    class Config:
+        from_attributes = True
+
 class CoursUpdate(BaseModel):
     niveau_id: int
     type_cours_id: int

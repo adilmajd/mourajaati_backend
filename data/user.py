@@ -124,7 +124,8 @@ def login_user(session: Session,login: str,compte_password: str):
              "user_id":user.user_public_id, # interdit
              "roles":roles,
              "permissions":permissions,
-             "login":user.login
+             "login":user.login,
+             "niveau":user.niveau_id
              }
 
 def users_search(session: Session, login: str=None,nom: str=None,prenom: str=None):
