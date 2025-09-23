@@ -21,7 +21,7 @@ router = APIRouter()
 def add_cours(cours: Cours, session: Session = Depends(get_session)):
     return create_entity(session, cours)
 """
-@router.post("/cour/", response_model=Cours)
+@router.post("/cour/")
 def add_cours_r(cours: CoursCreate, session: Session = Depends(get_session)):
     return add_cours(cours,session)
 

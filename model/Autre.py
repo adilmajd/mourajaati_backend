@@ -98,3 +98,13 @@ class CoursCreate(BaseModel):
     cours_titre: str
     niveau_id: int
     type_cours_id: int
+    user_public_id: str 
+
+
+class CoursCreateAdd(BaseModel):
+    user_id: int 
+    cours_titre: str
+    niveau_id: int
+    type_cours_id: int
+    class Config:
+        from_attributes = True

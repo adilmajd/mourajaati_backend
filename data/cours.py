@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlmodel import Session, select
-from model.Autre import CoursCreate, CoursRead, CoursUpdate, NiveauRead, TypeCoursRead
+from data.CRUD import create_entity
+from model.Autre import CoursCreate, CoursCreateAdd, CoursRead, CoursUpdate, NiveauRead, TypeCoursRead
 from model.Base import Niveau
-from model.Cours import Comment, Cours, Exercice, Post, Typecours, UserExercice  # ton fichier connexion DB
+from model.Cours import Comment, Cours, Exercice, Post, Typecours, UserExercice
+from model.User import User  # ton fichier connexion DB
 
 def list_cours_nv_type(session: Session):
     statement = (
@@ -75,13 +77,22 @@ def delete_cours_post_exercice(cours_id: int, session: Session):
     return {"message": "Cours et tous les contenus liés supprimés avec succès"}
 
 def add_cours(cours: CoursCreate, session: Session):
+    # récupérer l’utilisateur à partir de son public_id
+    statement = select(User).where(User.user_public_id == cours.user_public_id)
+    user = session.exec(statement).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+
+    # créer le nouveau cours avec user_id trouvé
     new_cours = Cours(
+        user_id=user.user_id,
         cours_titre=cours.cours_titre,
         niveau_id=cours.niveau_id,
-        type_cours_id=cours.type_cours_id,
-        user_id=1  # ou le user connecté
+        type_cours_id=cours.type_cours_id
     )
     session.add(new_cours)
     session.commit()
     session.refresh(new_cours)
+
     return {"message": "Cours ajouté avec succès", "cours": new_cours}
