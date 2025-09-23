@@ -18,7 +18,6 @@ def get_user_niveau(user_public_id: str, session: Session):
     if not niveau:
         raise HTTPException(status_code=404, detail="Niveau non trouvé")
 
-    # ⚠️ Retourne bien un objet SQLModel
     return niveau
 
 def get_niveaux_by_cycle(cycle_id: int, session: Session):

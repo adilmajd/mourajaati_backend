@@ -1,11 +1,11 @@
 from fastapi import APIRouter,Depends
 from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
-from data.cours import list_cours_nv_type, update_cours_nv_type
+from data.cours import add_cours, delete_cours_post_exercice, list_cours_nv_type, update_cours_nv_type
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
 
-from model.Autre import CoursRead, CoursUpdate, TypeCreate
+from model.Autre import CoursCreate, CoursRead, CoursUpdate, TypeCreate
 from model.Cours import Cours, Examen, Exercice, Post, Comment, Typecours, UserExamen, UserExercice
 
 """
@@ -16,9 +16,14 @@ from model.Cours import Cours, Examen, Exercice, Post, Comment, Typecours, UserE
 router = APIRouter()
 
 # ---- COURS ----
-@router.post("/cours/", response_model=Cours)
+"""
+@router.post("/cour/", response_model=Cours)
 def add_cours(cours: Cours, session: Session = Depends(get_session)):
     return create_entity(session, cours)
+"""
+@router.post("/cour/", response_model=Cours)
+def add_cours_r(cours: CoursCreate, session: Session = Depends(get_session)):
+    return add_cours(cours,session)
 
 @router.get("/cours/", response_model=List[Cours])
 def list_cours(session: Session = Depends(get_session)):
@@ -28,14 +33,18 @@ def list_cours(session: Session = Depends(get_session)):
 def get_cours(cours_id: int, session: Session = Depends(get_session)):
     return get_entity_by_id(session, Cours, cours_id)
 
-@router.put("/cours/{cours_id}", response_model=Cours)
+@router.put("/cour/{cours_id}", response_model=Cours)
 def update_cours(cours_id: int, updates: dict, session: Session = Depends(get_session)):
     return update_entity(session, Cours, cours_id, updates)
 
-@router.delete("/cours/{cours_id}")
+"""
+@router.delete("/cour/{cours_id}")
 def delete_cours(cours_id: int, session: Session = Depends(get_session)):
     return delete_entity(session, Cours, cours_id)
-
+"""
+@router.delete("/cour/{cours_id}")
+def delete_cours(cours_id: int, session: Session = Depends(get_session)):
+    return delete_cours_post_exercice(cours_id,session)
 
 
 
@@ -43,7 +52,7 @@ def delete_cours(cours_id: int, session: Session = Depends(get_session)):
 def list_cours_nv_type_r(session: Session = Depends(get_session)):
     return list_cours_nv_type(session)
 
-@router.put("/cours/{cours_id}", response_model=CoursRead)
+@router.put("/cour/{cours_id}", response_model=CoursRead)
 def update_cours_nv_type_r(cours_id: int, data: CoursUpdate, session: Session = Depends(get_session)):
     return update_cours_nv_type(cours_id,data,session)
   
