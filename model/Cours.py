@@ -11,6 +11,7 @@ class Cours(SQLModel, table=True):
     video: Optional[str] = Field(max_length=20, default=None)
     audio: Optional[str] = Field(max_length=20, default=None)
     url: Optional[str] = Field(max_length=20, default=None)
+    cours_nbr_view: Optional[int]
     niveau_id: int = Field(foreign_key="niveau.niveau_id")
     user_id: int = Field(foreign_key="user.user_id")
     type_cours_id: int = Field(foreign_key="typecours.type_cours_id")

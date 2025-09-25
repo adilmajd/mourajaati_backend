@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlmodel import Session, select
 from data.CRUD import create_entity
-from model.Autre import CoursCreate, CoursCreateAdd, CoursRead, CoursReadUser, CoursUpdate, NiveauRead, TypeCoursRead
+from model.Autre import CoursContenuUpdate, CoursCreate, CoursCreateAdd, CoursRead, CoursReadUser, CoursUpdate, NiveauRead, TypeCoursRead
 from model.Base import Niveau
 from model.Cours import Comment, Cours, Exercice, Post, Typecours, UserExercice
 from model.User import User  # ton fichier connexion DB
@@ -104,10 +104,48 @@ def add_cours(cours: CoursCreate, session: Session):
         user_id=user.user_id,
         cours_titre=cours.cours_titre,
         niveau_id=cours.niveau_id,
-        type_cours_id=cours.type_cours_id
+        type_cours_id=cours.type_cours_id,
+        contenu="Le contenu est vide"
     )
     session.add(new_cours)
     session.commit()
     session.refresh(new_cours)
 
     return {"message": "Cours ajouté avec succès", "cours": new_cours}
+
+
+def get_cours_contenu(cours_id: int, session: Session):
+    statement = select(Cours).where(Cours.cours_id == cours_id)
+    cours = session.exec(statement).first()
+    if not cours:
+        raise HTTPException(status_code=404, detail="Cours introuvable")
+
+    # Retourner uniquement les infos utiles (ex: contenu, titre, vidéo, etc.)
+    return {
+        "cours_id": cours.cours_id,
+        "cours_titre": cours.cours_titre,
+        "contenu": cours.contenu,
+        "video": cours.video,
+        "audio": cours.audio,
+        "url": cours.url,
+        "cours_nbr_view": cours.cours_nbr_view,
+    }
+
+
+def update_cours_contenu(user_public_id:str,data: CoursContenuUpdate, session: Session):
+    statement = select(User).where(User.user_public_id == user_public_id)
+    user = session.exec(statement).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    cours = session.get(Cours, data.cours_id)
+    if not cours:
+        raise HTTPException(status_code=404, detail="Cours introuvable")
+    
+    cours.contenu = data.contenu  # mise à jour du champ
+    cours.user_id = user.user_id
+    session.add(cours)
+    session.commit()
+    session.refresh(cours)
+
+    return {"message": "Contenu mis à jour avec succès", "cours_id": cours.cours_id, "contenu": cours.contenu}

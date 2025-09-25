@@ -1,11 +1,11 @@
 from fastapi import APIRouter,Depends
 from data.CRUD import create_entity, delete_entity, get_all_entities, get_entity_by_id, update_entity
-from data.cours import add_cours, delete_cours_post_exercice, list_cours_nv_type, list_cours_type, update_cours_nv_type
+from data.cours import add_cours, delete_cours_post_exercice, get_cours_contenu, list_cours_nv_type, list_cours_type, update_cours_contenu, update_cours_nv_type
 from database.base import get_session
 from sqlmodel import Session, select
 from typing import List, Optional
 
-from model.Autre import CoursCreate, CoursRead, CoursReadUser, CoursUpdate, TypeCreate
+from model.Autre import CoursContenuUpdate, CoursCreate, CoursRead, CoursReadUser, CoursUpdate, TypeCreate
 from model.Cours import Cours, Examen, Exercice, Post, Comment, Typecours, UserExamen, UserExercice
 
 """
@@ -61,6 +61,13 @@ def list_cours_type_r(niveau_id: int,session: Session = Depends(get_session)):
 def update_cours_nv_type_r(cours_id: int, data: CoursUpdate, session: Session = Depends(get_session)):
     return update_cours_nv_type(cours_id,data,session)
   
+@router.get("/cours_contenu/{cours_id}")
+def get_cours_contenu_r(cours_id: int, session: Session = Depends(get_session)):
+    return get_cours_contenu(cours_id, session)
+
+@router.put("/update-contenu/{user_public_id}")
+def update_cours_contenu_r(user_public_id: str,data: CoursContenuUpdate, session: Session = Depends(get_session)):
+    return update_cours_contenu(user_public_id,data, session)
 
 # ---- EXERCICE ----
 @router.post("/exercices/", response_model=Exercice)

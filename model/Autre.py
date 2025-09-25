@@ -115,3 +115,9 @@ class CoursCreateAdd(BaseModel):
     type_cours_id: int
     class Config:
         from_attributes = True
+
+class CoursContenuUpdate(BaseModel):
+    cours_id: int
+    contenu: str
+    class Config:
+        from_attributes = True
